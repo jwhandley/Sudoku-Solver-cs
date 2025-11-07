@@ -1,7 +1,12 @@
 ﻿using System.Diagnostics;
 
+if (args.Length < 1)
+{
+    Console.WriteLine("Usage: ./Sudoku-Solver <INPUT>");
+    return;
+}
 
-List<string> puzzles = File.ReadAllLines("./sudoku10k.txt").ToList();
+List<string> puzzles = File.ReadAllLines(args[0]).ToList();
 var threadCount = 10;
 var puzzlesPerThread = puzzles.Count / threadCount;
 
