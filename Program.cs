@@ -7,42 +7,29 @@ if (args.Length < 1)
 }
 
 List<string> puzzles = File.ReadAllLines(args[0]).ToList();
-var threadCount = 10;
-var puzzlesPerThread = puzzles.Count / threadCount;
-
 var sw = Stopwatch.StartNew();
-List<Task> tasks = [];
-for (int i = 0; i < threadCount; i++)
-{
-
-    var end = i == threadCount - 1 ? puzzles.Count : (i + 1) * puzzlesPerThread;
-    var partition = puzzles[(i * puzzlesPerThread)..end];
-
-    var t = Task.Run(() =>
+Parallel.ForEach(
+    source: puzzles,
+    localInit: () =>
     {
         var grids = new Grid[81];
-        for (int j = 0; j < 81; j++)
-        {
+        for (int j = 0; j < grids.Length; j++)
             grids[j] = new Grid();
-        }
+        return grids;
+    },
+    body: (puzzle, loopState, grids) =>
+    {
+        var grid = Grid.Parse(puzzle);
 
-        foreach (var puzzle in partition)
-        {
-            var grid = Grid.Parse(puzzle);
-            if (!grid.Search(grids))
-            {
-                Console.WriteLine("Oops, couldn't solve puzzle!");
-            }
+        if (!grid.Search(grids))
+            Console.WriteLine("Oops, couldn't solve puzzle!");
 
-            if (!grid.Validate())
-            {
-                Console.WriteLine("Oops, broken solution!");
-            }
-        }
-    });
-    tasks.Add(t);
-}
+        if (!grid.Validate())
+            Console.WriteLine("Oops, broken solution!");
 
-Task.WaitAll(tasks);
+        return grids;
+    },
+    localFinally: _ => { /* nothing to do */ }
+);
 
 Console.WriteLine($"Solved puzzles in {sw.ElapsedMilliseconds}ms");
