@@ -1,4 +1,6 @@
-public static class SudokuSolver
+namespace Sudoku_Solver;
+
+public static class CellExtensions
 {
     extension(uint p)
     {
@@ -22,4 +24,3 @@ public static class SudokuSolver
         public int GetValue => (int)uint.TrailingZeroCount(p) + 1;
     }
 }
-

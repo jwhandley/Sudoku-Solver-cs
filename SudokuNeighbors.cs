@@ -1,5 +1,7 @@
 using System.Diagnostics;
 
+namespace Sudoku_Solver;
+
 public static class SudokuNeighbors
 {
     public const int Size = 9;

@@ -1,4 +1,5 @@
 using System.Text;
+namespace Sudoku_Solver;
 
 public class Grid
 {

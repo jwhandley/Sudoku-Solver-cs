@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Sudoku_Solver;
 
 if (args.Length < 1)
 {
