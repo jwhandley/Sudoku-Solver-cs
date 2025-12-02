@@ -7,15 +7,16 @@ public sealed class Grid : IDisposable
     private static readonly ArrayPool<uint> arrayPool = ArrayPool<uint>.Shared;
     private readonly uint[] values;
     const int full = 0b111_111_111;
-    public Grid()
+    public Grid(bool init = true)
     {
         values = arrayPool.Rent(81);
+        if (!init) return;
+
         for (int i = 0; i < 81; i++)
         {
             values[i] = full;
         }
     }
-
     public void CloneFrom(Grid other)
     {
         Array.Copy(other.values, values, 81);
@@ -97,11 +98,11 @@ public sealed class Grid : IDisposable
             return true;
         }
 
-        using var result = new Grid();
         for (int p = 1; p <= 9; p++)
         {
             if (!values[idx].Contains(p)) continue;
 
+            using var result = new Grid();
             result.CloneFrom(this);
             if (result.Fill(idx, p) && result.Search())
             {

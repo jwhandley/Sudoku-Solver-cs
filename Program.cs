@@ -15,14 +15,16 @@ Parallel.ForEach(puzzles, (puzzle) =>
 {
     using var grid = Grid.Parse(puzzle);
 
+
     if (!grid.Search())
     {
         Console.WriteLine("Oops, couldn't solve puzzle!");
+        return;
     }
 
     if (!grid.Validate())
     {
-        Console.WriteLine(grid);
+        Console.WriteLine("Oops, solution is not valid!");
     }
 });
 Console.WriteLine($"Solved puzzles in {sw.ElapsedMilliseconds}ms");
