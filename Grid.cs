@@ -1,13 +1,15 @@
+using System.Buffers;
 using System.Text;
 namespace Sudoku_Solver;
 
-public class Grid
+public sealed class Grid : IDisposable
 {
+    private static readonly ArrayPool<uint> arrayPool = ArrayPool<uint>.Shared;
     private readonly uint[] values;
     const int full = 0b111_111_111;
     public Grid()
     {
-        values = new uint[81];
+        values = arrayPool.Rent(81);
         for (int i = 0; i < 81; i++)
         {
             values[i] = full;
@@ -88,20 +90,20 @@ public class Grid
         return true;
     }
 
-    public bool Search(Grid[] grids, int level = 0)
+    public bool Search()
     {
         if (!SelectSquare(out int idx))
         {
             return true;
         }
 
-        var result = grids[level];
+        using var result = new Grid();
         for (int p = 1; p <= 9; p++)
         {
             if (!values[idx].Contains(p)) continue;
 
             result.CloneFrom(this);
-            if (result.Fill(idx, p) && result.Search(grids, level + 1))
+            if (result.Fill(idx, p) && result.Search())
             {
                 CloneFrom(result);
                 return true;
@@ -110,7 +112,6 @@ public class Grid
 
         return false;
     }
-
     private bool SelectSquare(out int idx)
     {
         int lowest = int.MaxValue;
@@ -131,7 +132,15 @@ public class Grid
 
     public bool Validate()
     {
-        if (!values.All(v => v.IsSolved)) return false;
+        for (int i = 0; i < 81; i++)
+        {
+            if (!values[i].IsSolved)
+            {
+                Console.WriteLine("Not all values are solved");
+                return false;
+            }
+        }
+
 
         bool[] seen = new bool[9];
 
@@ -144,7 +153,11 @@ public class Grid
                 seen[values[r * 9 + c].GetValue - 1] = true;
             }
 
-            if (!seen.All(v => v)) return false;
+            if (!seen.All(v => v))
+            {
+                Console.WriteLine($"Repeted values in row {r}");
+                return false;
+            }
         }
 
         // Check columns
@@ -156,7 +169,11 @@ public class Grid
                 seen[values[r * 9 + c].GetValue - 1] = true;
             }
 
-            if (!seen.All(v => v)) return false;
+            if (!seen.All(v => v))
+            {
+                Console.WriteLine($"Repeted values in col {c}");
+                return false;
+            }
         }
 
         // Check squares
@@ -172,7 +189,11 @@ public class Grid
                         seen[values[(sr + dr) * 9 + sc + dc].GetValue - 1] = true;
                     }
                 }
-                if (!seen.All(v => v)) return false;
+                if (!seen.All(v => v))
+                {
+                    Console.WriteLine($"Repeted values in square ({sr},{sc})");
+                    return false;
+                }
             }
         }
 
@@ -199,5 +220,10 @@ public class Grid
         }
 
         return sb.ToString();
+    }
+
+    public void Dispose()
+    {
+        if (values is not null) arrayPool.Return(values, false);
     }
 }

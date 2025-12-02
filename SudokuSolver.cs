@@ -1,3 +1,5 @@
+using System.Buffers;
+
 namespace Sudoku_Solver;
 
 public static class CellExtensions
